@@ -4,8 +4,11 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+
 import edu.wpi.first.wpilibj.PWMVictorSPX;
 import edu.wpi.first.wpilibj.SlewRateLimiter;
+import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import frc.robot.DifferentialDrive6391;
 import frc.robot.Constants.DriveConstants;
@@ -15,14 +18,14 @@ public class DriveSubsystem extends SubsystemBase {
   // The motors on the left side of the drive.
   private final SpeedControllerGroup m_leftMotors =
       new SpeedControllerGroup(
-          new PWMVictorSPX(DriveConstants.kLeftMotor1Port),
-          new PWMVictorSPX(DriveConstants.kLeftMotor2Port));
+          new WPI_TalonFX(DriveConstants.kLeftMotor1Port),
+          new WPI_TalonFX(DriveConstants.kLeftMotor2Port));
 
   // The motors on the right side of the drive.
   private final SpeedControllerGroup m_rightMotors =
       new SpeedControllerGroup(
-          new PWMVictorSPX(DriveConstants.kRightMotor1Port),
-          new PWMVictorSPX(DriveConstants.kRightMotor2Port));
+          new WPI_TalonFX(DriveConstants.kRightMotor1Port),
+          new WPI_TalonFX(DriveConstants.kRightMotor2Port));
 
   // The robot's drive
   private final DifferentialDrive6391 m_drive = new DifferentialDrive6391(m_leftMotors, m_rightMotors);
