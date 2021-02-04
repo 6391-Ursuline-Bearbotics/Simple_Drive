@@ -28,8 +28,6 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    m_robotDrive.setMaxOutput(DriveConstants.kForwardMaxOutput, DriveConstants.kRotationMaxOutput);
-    m_robotDrive.setDeadband(DriveConstants.kForwardDeadband, DriveConstants.kRotationDeadband);
     // Configure the button bindings
     configureButtonBindings();
 
@@ -41,7 +39,7 @@ public class RobotContainer {
         new RunCommand(
             () ->
                 m_robotDrive.arcadeDrive(
-                    m_driverController.JoystickLY(),
+                    -m_driverController.JoystickLY(),
                     m_driverController.JoystickRX()),
             m_robotDrive));
   }

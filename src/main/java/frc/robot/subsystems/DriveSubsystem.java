@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj.PWMVictorSPX;
 import edu.wpi.first.wpilibj.SlewRateLimiter;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
-import frc.robot.DifferentialDrive6391;
+import frc.robot.UA6391.DifferentialDrive6391;
 import frc.robot.Constants.DriveConstants;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -30,11 +30,14 @@ public class DriveSubsystem extends SubsystemBase {
   // The robot's drive
   private final DifferentialDrive6391 m_drive = new DifferentialDrive6391(m_leftMotors, m_rightMotors);
 
-  SlewRateLimiter forwardRamp = new SlewRateLimiter(DriveConstants.kForwardRamp);
-  SlewRateLimiter rotationRamp = new SlewRateLimiter(DriveConstants.kRotationRamp);
-
   /** Creates a new DriveSubsystem. */
-  public DriveSubsystem() {}
+  public DriveSubsystem() {
+    m_drive.setMaxOutput(DriveConstants.kMaxOutputForward, DriveConstants.kMaxOutputRotation);
+    m_drive.setMinOutput(DriveConstants.kMinOutputForward, DriveConstants.kMinOutputRotation);
+    m_drive.setDeadband(DriveConstants.kDeadbandForward, DriveConstants.kDeadbandRotation);
+    m_drive.setRamp(DriveConstants.kRampForward, DriveConstants.kRampRotation);
+    m_drive.setDriveStraight(DriveConstants.kDriveStraightLeft, DriveConstants.kDriveStraightRight);
+  }
 
   /**
    * Drives the robot using arcade controls.
@@ -43,7 +46,7 @@ public class DriveSubsystem extends SubsystemBase {
    * @param rot the commanded rotation
    */
   public void arcadeDrive(double fwd, double rot) {
-    m_drive.arcadeDrive(forwardRamp.calculate(fwd), rotationRamp.calculate(rot));
+    m_drive.arcadeDrive(fwd, rot);
   }
 
   /**

@@ -29,6 +29,18 @@ public final class Constants {
 
     public static final double kForwardRamp = 0.2;
     public static final double kRotationRamp = 0.2;
+
+    // Differential Drive setup parameters.  These control how the drivers input translates to motor power.
+    public static final double kMaxOutputForward = 1; // % motor ouput
+    public static final double kMaxOutputRotation = 0.6; // % motor ouput
+    public static final double kDeadbandForward = 0.05; // % motor ouput
+    public static final double kDeadbandRotation = 0.05; // % motor ouput
+    public static final double kRampForward = 0.2; // Seconds to go from min to max motor %
+    public static final double kRampRotation = 0.2; // Seconds to go from min to max motor %
+    public static final double kMinOutputForward = 0; // Minimum % forward power
+    public static final double kMinOutputRotation = 0.2; // Minimum % rotation power
+    public static final double kDriveStraightLeft = 1; // Multiplier on motor power to help drive straight
+    public static final double kDriveStraightRight = 0.98; // Multiplier on motor power to help drive straight
   }
 
   public static final class OIConstants {
