@@ -61,14 +61,6 @@ public class DriveSubsystem extends SubsystemBase {
       new TrapezoidProfile.Constraints(5, 10));
 
   AHRS ahrs;
-  try {
-    /* Communicate w/navX-MXP via the MXP SPI Bus.                                     */
-    /* Alternatively:  I2C.Port.kMXP, SerialPort.Port.kMXP or SerialPort.Port.kUSB     */
-    /* See http://navx-mxp.kauailabs.com/guidance/selecting-an-interface/ for details. */
-    ahrs = new AHRS(SPI.Port.kMXP); 
-  } catch (RuntimeException ex ) {
-      DriverStation.reportError("Error instantiating navX-MXP:  " + ex.getMessage(), true);
-  }
 
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
@@ -77,6 +69,15 @@ public class DriveSubsystem extends SubsystemBase {
     m_drive.setDeadband(DriveConstants.kDeadbandForward, DriveConstants.kDeadbandRotation);
     m_drive.setRamp(DriveConstants.kRampForward, DriveConstants.kRampRotation);
     m_drive.setDriveStraight(DriveConstants.kDriveStraightLeft, DriveConstants.kDriveStraightRight);
+
+    try {
+      /* Communicate w/navX-MXP via the MXP SPI Bus.                                     */
+      /* Alternatively:  I2C.Port.kMXP, SerialPort.Port.kMXP or SerialPort.Port.kUSB     */
+      /* See http://navx-mxp.kauailabs.com/guidance/selecting-an-interface/ for details. */
+      ahrs = new AHRS(SPI.Port.kMXP); 
+    } catch (RuntimeException ex ) {
+        DriverStation.reportError("Error instantiating navX-MXP:  " + ex.getMessage(), true);
+    }
   }
 
   /**
@@ -104,7 +105,7 @@ public class DriveSubsystem extends SubsystemBase {
 
   public void turnToAngle(double targetAngle) {
     double pidout = m_AnglePID.calculate(ahrs.getAngle(), targetAngle);
-    Matrix<States, N1> pidMatrix = VecBuilder.fill(pidout, pidout);
-    m_driveFeedForward.calculate(pidMatrix);
+    var pidMatrix = VecBuilder.fill(pidout, pidout);
+    m_drive.arcadeDrive(0, m_driveFeedForward.calculate(pidMatrix).get(0, 0));
   }
 }
