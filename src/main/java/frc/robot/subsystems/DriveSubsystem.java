@@ -5,14 +5,31 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+import com.kauailabs.navx.frc.AHRS;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PWMVictorSPX;
+import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.SlewRateLimiter;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
+import edu.wpi.first.wpilibj.controller.LinearPlantInversionFeedforward;
+import edu.wpi.first.wpilibj.controller.ProfiledPIDController;
+import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
+import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim.KitbotGearing;
+import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim.KitbotMotor;
+import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim.KitbotWheelSize;
+import edu.wpi.first.wpilibj.system.LinearSystem;
+import edu.wpi.first.wpilibj.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.system.plant.LinearSystemId;
+import edu.wpi.first.wpilibj.trajectory.TrapezoidProfile;
 import frc.robot.UA6391.DifferentialDrive6391;
 import frc.robot.Constants.DriveConstants;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpiutil.math.Matrix;
+import edu.wpi.first.wpiutil.math.VecBuilder;
+import edu.wpi.first.wpiutil.math.numbers.N1;
+import edu.wpi.first.wpiutil.math.numbers.N2;
 
 public class DriveSubsystem extends SubsystemBase {
   // The motors on the left side of the drive.
@@ -29,6 +46,29 @@ public class DriveSubsystem extends SubsystemBase {
 
   // The robot's drive
   private final DifferentialDrive6391 m_drive = new DifferentialDrive6391(m_leftMotors, m_rightMotors);
+  
+  private LinearSystem<N2, N2, N2> m_driveModel = LinearSystemId.createDrivetrainVelocitySystem(
+    DriveConstants.kDriveGearbox,
+    DriveConstants.kDriveWeightKg,
+    DriveConstants.kWheelDiameterMeters / 2.0,
+    DriveConstants.kTrackWidthMeters / 2.0,
+    DriveConstants.kDriveMOI,
+    DriveConstants.kDriveGearing);
+
+  LinearPlantInversionFeedforward m_driveFeedForward = new LinearPlantInversionFeedforward<>(m_driveModel, 0.02);
+
+  ProfiledPIDController m_AnglePID = new ProfiledPIDController(DriveConstants.kTurnP, DriveConstants.kTurnI, DriveConstants.kTurnD,
+      new TrapezoidProfile.Constraints(5, 10));
+
+  AHRS ahrs;
+  try {
+    /* Communicate w/navX-MXP via the MXP SPI Bus.                                     */
+    /* Alternatively:  I2C.Port.kMXP, SerialPort.Port.kMXP or SerialPort.Port.kUSB     */
+    /* See http://navx-mxp.kauailabs.com/guidance/selecting-an-interface/ for details. */
+    ahrs = new AHRS(SPI.Port.kMXP); 
+  } catch (RuntimeException ex ) {
+      DriverStation.reportError("Error instantiating navX-MXP:  " + ex.getMessage(), true);
+  }
 
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
@@ -60,5 +100,11 @@ public class DriveSubsystem extends SubsystemBase {
 
   public void setDeadband(double deadbandForward, double deadbandRotation) {
     m_drive.setDeadband(deadbandForward, deadbandRotation);
+  }
+
+  public void turnToAngle(double targetAngle) {
+    double pidout = m_AnglePID.calculate(ahrs.getAngle(), targetAngle);
+    Matrix<States, N1> pidMatrix = VecBuilder.fill(pidout, pidout);
+    m_driveFeedForward.calculate(pidMatrix);
   }
 }
