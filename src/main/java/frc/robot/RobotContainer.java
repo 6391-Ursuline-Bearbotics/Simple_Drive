@@ -52,8 +52,8 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
     // Drive at half speed when the right bumper is held
-    m_driverController.BumperR.whenPressed(() -> m_robotDrive.setMaxOutput(DriveConstants.kPartialPower, DriveConstants.kPartialPower))
-        .whenReleased(() -> m_robotDrive.setMaxOutput(DriveConstants.kForwardMaxOutput, DriveConstants.kRotationMaxOutput));
+/*     m_driverController.BumperR.whenPressed(() -> m_robotDrive.setMaxOutput(DriveConstants.kPartialPower, DriveConstants.kPartialPower))
+        .whenReleased(() -> m_robotDrive.setMaxOutput(DriveConstants.kForwardMaxOutput, DriveConstants.kRotationMaxOutput)); */
   }
 
   /**

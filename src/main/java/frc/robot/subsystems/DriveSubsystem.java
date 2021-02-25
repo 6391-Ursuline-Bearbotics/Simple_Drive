@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.controller.LinearPlantInversionFeedforward;
 import edu.wpi.first.wpilibj.controller.ProfiledPIDController;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
@@ -46,7 +47,7 @@ public class DriveSubsystem extends SubsystemBase {
           new WPI_TalonFX(DriveConstants.kRightMotor2Port));
 
   // The robot's drive
-  private final DifferentialDrive6391 m_drive = new DifferentialDrive6391(m_leftMotors, m_rightMotors);
+  private final DifferentialDrive m_drive = new DifferentialDrive(m_leftMotors, m_rightMotors);
 
   // These represent our regular encoder objects, which we would
   // create to use on a real robot.
@@ -75,18 +76,18 @@ public class DriveSubsystem extends SubsystemBase {
   ProfiledPIDController m_AnglePID = new ProfiledPIDController(DriveConstants.kTurnP, DriveConstants.kTurnI, DriveConstants.kTurnD,
       new TrapezoidProfile.Constraints(5, 10));
 
-  AHRS m_gyro;
+  private AHRS m_gyro = new AHRS();
 
   private Field2d m_field = new Field2d();
   private final DifferentialDriveOdometry m_odometry;
 
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
-    m_drive.setMaxOutput(DriveConstants.kMaxOutputForward, DriveConstants.kMaxOutputRotation);
+    /* m_drive.setMaxOutput(DriveConstants.kMaxOutputForward, DriveConstants.kMaxOutputRotation);
     m_drive.setMinOutput(DriveConstants.kMinOutputForward, DriveConstants.kMinOutputRotation);
     m_drive.setDeadband(DriveConstants.kDeadbandForward, DriveConstants.kDeadbandRotation);
     m_drive.setRamp(DriveConstants.kRampForward, DriveConstants.kRampRotation);
-    m_drive.setDriveStraight(DriveConstants.kDriveStraightLeft, DriveConstants.kDriveStraightRight);
+    m_drive.setDriveStraight(DriveConstants.kDriveStraightLeft, DriveConstants.kDriveStraightRight); */
 
     if (RobotBase.isSimulation()) { // If our robot is simulated
       m_drive.setRightSideInverted(false);
@@ -121,7 +122,7 @@ public class DriveSubsystem extends SubsystemBase {
     int dev = SimDeviceDataJNI.getSimDeviceHandle("navX-Sensor[0]");
     SimDouble angle = new SimDouble(SimDeviceDataJNI.getSimValueHandle(dev, "Yaw"));
     // NavX expects clockwise positive, but sim outputs clockwise negative
-    //angle.set(Math.IEEEremainder(-m_driveSim.getHeading().getDegrees(), 360));
+    angle.set(Math.IEEEremainder(-m_driveSim.getHeading().getDegrees(), 360));
 
     m_leftEncoderSim.setDistance(m_driveSim.getLeftPositionMeters());
     m_leftEncoderSim.setRate(m_driveSim.getLeftVelocityMetersPerSecond());
@@ -147,7 +148,11 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public double getHeading() {
-    return m_gyro.getAngle();
+    double heading = -m_gyro.getYaw();
+    if (heading > 180 || heading < 180) {
+      heading = Math.IEEEremainder(heading, 360);
+    }
+    return heading;
   }
 
   /**
@@ -155,13 +160,13 @@ public class DriveSubsystem extends SubsystemBase {
    *
    * @param maxOutput the maximum output to which the drive will be constrained
    */
-  public void setMaxOutput(double maxOutputForward, double maxOutputRotation) {
+/*   public void setMaxOutput(double maxOutputForward, double maxOutputRotation) {
     m_drive.setMaxOutput(maxOutputForward, maxOutputRotation);
   }
 
   public void setDeadband(double deadbandForward, double deadbandRotation) {
     m_drive.setDeadband(deadbandForward, deadbandRotation);
-  }
+  } */
 
   public void turnToAngle(double targetAngle) {
     double pidout = m_AnglePID.calculate(getHeading(), targetAngle);
