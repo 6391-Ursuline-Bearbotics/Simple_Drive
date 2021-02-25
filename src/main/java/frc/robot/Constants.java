@@ -61,6 +61,7 @@ public final class Constants {
             * Math.pow(Units.inchesToMeters(26.0 / 2.0), 2);
     public static final double kDriveMOI = batteryMoi + gearboxMoi;
     public static final double kDriveWeightKg = 60 * 0.45359237; // lbs to Kg
+	  public static final double kEncoderResolution = 4096;
   }
 
   public static final class OIConstants {
