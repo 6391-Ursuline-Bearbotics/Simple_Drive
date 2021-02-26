@@ -46,7 +46,7 @@ public final class Constants {
     public static final double kDriveStraightRight = 0.98; // Multiplier on motor power to help drive straight
 
     // Turn to Angle PID parameters
-    public static final double kTurnP = 0;
+    public static final double kTurnP = 0.1;
     public static final double kTurnI = 0;
     public static final double kTurnD = 0;
 
@@ -54,7 +54,7 @@ public final class Constants {
     public static final double kDriveGearing = 10.71;
     public static final double kWheelDiameterInches = 6d;
     public static final double kWheelDiameterMeters = Units.inchesToMeters(kWheelDiameterInches);
-    public static final double kTrackWidthMeters = 1.00639; // 0.69;
+    public static final double kTrackWidthMeters = Units.inchesToMeters(26); //1.00639; // 0.69;
     public static final double batteryMoi = 12.5 / 2.2 * Math.pow(Units.inchesToMeters(10), 2);
     public static final double gearboxMoi =
         (2.8 /* CIM motor */ * 2 / 2.2 + 2.0 /* Toughbox Mini- ish */)
@@ -62,6 +62,8 @@ public final class Constants {
     public static final double kDriveMOI = batteryMoi + gearboxMoi;
     public static final double kDriveWeightKg = 60 * 0.45359237; // lbs to Kg
 	  public static final double kEncoderResolution = 4096;
+    public static final double kPositionTolerance = 10;
+    public static final double kVelocityTolerance = 10;
   }
 
   public static final class OIConstants {

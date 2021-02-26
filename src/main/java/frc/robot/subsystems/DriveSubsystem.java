@@ -17,7 +17,6 @@ import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.controller.LinearPlantInversionFeedforward;
 import edu.wpi.first.wpilibj.controller.ProfiledPIDController;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
@@ -47,7 +46,7 @@ public class DriveSubsystem extends SubsystemBase {
           new WPI_TalonFX(DriveConstants.kRightMotor2Port));
 
   // The robot's drive
-  private final DifferentialDrive m_drive = new DifferentialDrive(m_leftMotors, m_rightMotors);
+  private final DifferentialDrive6391 m_drive = new DifferentialDrive6391(m_leftMotors, m_rightMotors);
 
   // These represent our regular encoder objects, which we would
   // create to use on a real robot.
@@ -70,24 +69,29 @@ public class DriveSubsystem extends SubsystemBase {
 
   LinearPlantInversionFeedforward m_driveFeedForward = new LinearPlantInversionFeedforward<>(m_driveModel, 0.02);
 
-  private DifferentialDrivetrainSim m_driveSim = new DifferentialDrivetrainSim(m_driveModel, DriveConstants.kDriveGearbox,
-      DriveConstants.kDriveGearing, DriveConstants.kTrackWidthMeters, DriveConstants.kWheelDiameterMeters / 2.0, null);
+  private DifferentialDrivetrainSim m_driveSim = new DifferentialDrivetrainSim(
+      DriveConstants.kDriveGearbox,
+      DriveConstants.kDriveGearing,
+      DriveConstants.kDriveMOI,
+      DriveConstants.kDriveWeightKg,
+      DriveConstants.kWheelDiameterMeters / 2.0,
+      DriveConstants.kTrackWidthMeters,  null);
 
   ProfiledPIDController m_AnglePID = new ProfiledPIDController(DriveConstants.kTurnP, DriveConstants.kTurnI, DriveConstants.kTurnD,
       new TrapezoidProfile.Constraints(5, 10));
 
-  private AHRS m_gyro = new AHRS();
+  private AHRS m_gyro;
 
   private Field2d m_field = new Field2d();
   private final DifferentialDriveOdometry m_odometry;
 
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
-    /* m_drive.setMaxOutput(DriveConstants.kMaxOutputForward, DriveConstants.kMaxOutputRotation);
+    m_drive.setMaxOutput(DriveConstants.kMaxOutputForward, DriveConstants.kMaxOutputRotation);
     m_drive.setMinOutput(DriveConstants.kMinOutputForward, DriveConstants.kMinOutputRotation);
     m_drive.setDeadband(DriveConstants.kDeadbandForward, DriveConstants.kDeadbandRotation);
     m_drive.setRamp(DriveConstants.kRampForward, DriveConstants.kRampRotation);
-    m_drive.setDriveStraight(DriveConstants.kDriveStraightLeft, DriveConstants.kDriveStraightRight); */
+    m_drive.setDriveStraight(DriveConstants.kDriveStraightLeft, DriveConstants.kDriveStraightRight);
 
     if (RobotBase.isSimulation()) { // If our robot is simulated
       m_drive.setRightSideInverted(false);
@@ -95,6 +99,9 @@ public class DriveSubsystem extends SubsystemBase {
 
     m_leftEncoder.setDistancePerPulse(Math.PI * DriveConstants.kWheelDiameterMeters / DriveConstants.kEncoderResolution);
     m_rightEncoder.setDistancePerPulse(Math.PI * DriveConstants.kWheelDiameterMeters / DriveConstants.kEncoderResolution);
+
+    m_AnglePID.enableContinuousInput(-180, 180);
+    m_AnglePID.setTolerance(DriveConstants.kPositionTolerance, DriveConstants.kVelocityTolerance);
 
     m_field = new Field2d();
 
@@ -135,6 +142,8 @@ public class DriveSubsystem extends SubsystemBase {
                       m_leftEncoder.getDistance(),
                       m_rightEncoder.getDistance());
     m_field.setRobotPose(m_odometry.getPoseMeters());
+
+    SmartDashboard.putNumber("Heading", getHeading());
   }
 
   /**
@@ -160,13 +169,13 @@ public class DriveSubsystem extends SubsystemBase {
    *
    * @param maxOutput the maximum output to which the drive will be constrained
    */
-/*   public void setMaxOutput(double maxOutputForward, double maxOutputRotation) {
+  public void setMaxOutput(double maxOutputForward, double maxOutputRotation) {
     m_drive.setMaxOutput(maxOutputForward, maxOutputRotation);
   }
 
   public void setDeadband(double deadbandForward, double deadbandRotation) {
     m_drive.setDeadband(deadbandForward, deadbandRotation);
-  } */
+  }
 
   public void turnToAngle(double targetAngle) {
     double pidout = m_AnglePID.calculate(getHeading(), targetAngle);
